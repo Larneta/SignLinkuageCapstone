@@ -1,0 +1,9 @@
+package org.example.signlinkuagecapstone.repository;
+
+import org.example.signlinkuagecapstone.entity.Module;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ModuleRepository extends JpaRepository<Module, Long> {
+}
