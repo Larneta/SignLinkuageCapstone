@@ -5,6 +5,7 @@ import org.example.signlinkuagecapstone.dto.*;
 import org.example.signlinkuagecapstone.service.QuizService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class QuizController {
         this.quizService = quizService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<QuizCreateResponse> createQuiz(@Valid @RequestBody QuizCreateRequest request) {
         QuizCreateResponse created = quizService.createQuiz(request);
@@ -40,6 +42,7 @@ public class QuizController {
         return ResponseEntity.ok(quizService.getAnswersForQuestion(questionId));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{quizId}")
     public ResponseEntity<Void> deleteQuiz(@PathVariable Long quizId) {
         quizService.deleteQuiz(quizId);

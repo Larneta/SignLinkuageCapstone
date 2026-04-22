@@ -1,12 +1,12 @@
 package org.example.signlinkuagecapstone.controller;
 
 import jakarta.validation.Valid;
+import org.example.signlinkuagecapstone.dto.LessonResponse;
 import org.example.signlinkuagecapstone.dto.ModuleRequest;
+import org.example.signlinkuagecapstone.dto.ModuleResponse;
 import org.example.signlinkuagecapstone.dto.LessonCreateRequest;
 import org.example.signlinkuagecapstone.dto.QuizCreateRequest;
-import org.example.signlinkuagecapstone.entity.Module;
-import org.example.signlinkuagecapstone.entity.Lesson;
-import org.example.signlinkuagecapstone.entity.Quiz;
+import org.example.signlinkuagecapstone.dto.QuizCreateResponse;
 import org.example.signlinkuagecapstone.service.ModuleService;
 import org.example.signlinkuagecapstone.service.LessonService;
 import org.example.signlinkuagecapstone.service.QuizService;
@@ -32,17 +32,17 @@ public class AdminController {
     }
 
     @PostMapping("/modules")
-    public ResponseEntity<Module> createModule(@Valid @RequestBody ModuleRequest request) {
-        return ResponseEntity.ok(moduleService.createModule(request));
+    public ResponseEntity<ModuleResponse> createModule(@Valid @RequestBody ModuleRequest request) {
+        return ResponseEntity.ok(moduleService.toModuleResponse(moduleService.createModule(request)));
     }
 
     @PostMapping("/lessons")
-    public ResponseEntity<Lesson> createLesson(@Valid @RequestBody LessonCreateRequest request) {
-        return ResponseEntity.ok(lessonService.createLesson(request));
+    public ResponseEntity<LessonResponse> createLesson(@Valid @RequestBody LessonCreateRequest request) {
+        return ResponseEntity.ok(lessonService.toLessonResponse(lessonService.createLesson(request), null));
     }
 
     @PostMapping("/quizzes")
-    public ResponseEntity<Quiz> createQuiz(@Valid @RequestBody QuizCreateRequest request) {
+    public ResponseEntity<QuizCreateResponse> createQuiz(@Valid @RequestBody QuizCreateRequest request) {
         return ResponseEntity.ok(quizService.createQuiz(request));
     }
 

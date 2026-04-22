@@ -24,6 +24,9 @@ public class Module {
     @OneToMany(mappedBy = "module")
     private List<Lesson> lessons;
 
+    @OneToMany(mappedBy = "module")
+    private List<Quiz> quizzes;
+
     public Module() {}
 
     public Long getId() {
@@ -52,5 +55,11 @@ public class Module {
     }
     public void setLessons(List<Lesson> lessons) {
         this.lessons = lessons;
+    }
+    public List<Quiz> getQuizzes() {
+        return quizzes;
+    }
+    public void setQuizzes(List<Quiz> quizzes) {
+        this.quizzes = quizzes;
     }
 }

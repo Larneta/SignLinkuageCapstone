@@ -55,4 +55,11 @@ public class UserLessonProgressService {
 
         moduleProgressService.updateModuleProgress(user, lesson, totalLessons);
     }
+
+    public boolean isLessonCompleted(User user, Long lessonId) {
+        return lessonProgressRepository
+                .findByUserIdAndLessonId(user.getId(), lessonId)
+                .map(UserLessonProgress::getCompleted)
+                .orElse(false);
+    }
 }

@@ -1,13 +1,13 @@
 package org.example.signlinkuagecapstone.controller;
 
-import jakarta.persistence.*;
 import jakarta.validation.Valid;
-
 import org.example.signlinkuagecapstone.dto.LessonResponse;
 import org.example.signlinkuagecapstone.entity.User;
+import org.example.signlinkuagecapstone.repository.UserRepository;
 import org.example.signlinkuagecapstone.service.UserLessonProgressService;
 
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import org.example.signlinkuagecapstone.dto.LessonCreateRequest;
 import org.example.signlinkuagecapstone.entity.Lesson;
@@ -24,29 +24,24 @@ public class LessonController {
 
     private final LessonService lessonService;
     private final UserLessonProgressService userLessonProgressService;
+    private final UserRepository userRepository;
 
     public LessonController(
             LessonService lessonService,
-            UserLessonProgressService userLessonProgressService
+            UserLessonProgressService userLessonProgressService,
+            UserRepository userRepository
     ) {
         this.lessonService = lessonService;
         this.userLessonProgressService = userLessonProgressService;
+        this.userRepository = userRepository;
     }
 
 
     private LessonResponse toLessonResponse(Lesson lesson, Boolean completed) {
-        return new LessonResponse(
-                lesson.getId(),
-                lesson.getTitle(),
-                lesson.getDescription(),
-                null, // videoUrl (frontend-owned)
-                null, // lessonOrder (optional, future use)
-                lesson.getDurationSeconds(),
-                lesson.getModule().getId(),
-                completed
-        );
+        return lessonService.toLessonResponse(lesson, completed);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<LessonResponse> createLesson(
             @Valid @RequestBody LessonCreateRequest request
@@ -58,26 +53,38 @@ public class LessonController {
     }
 
     @GetMapping("/{lessonId}")
-    public ResponseEntity<LessonResponse> getLesson(@PathVariable Long lessonId) {
+    public ResponseEntity<LessonResponse> getLesson(
+            @PathVariable Long lessonId,
+            Authentication authentication
+    ) {
         Lesson lesson = lessonService.getLessonById(lessonId);
-        return ResponseEntity.ok(toLessonResponse(lesson, null));
+        Boolean completed = authentication != null
+                ? userLessonProgressService.isLessonCompleted(requireUser(authentication), lessonId)
+                : null;
+        return ResponseEntity.ok(toLessonResponse(lesson, completed));
     }
 
 
     @GetMapping("/module/{moduleId}")
     public ResponseEntity<List<LessonResponse>> getLessonsByModule(
-            @PathVariable Long moduleId
+            @PathVariable Long moduleId,
+            Authentication authentication
     ) {
+        User user = authentication != null ? requireUser(authentication) : null;
         List<LessonResponse> responses = lessonService
                 .getLessonsByModule(moduleId)
                 .stream()
-                .map(lesson -> toLessonResponse(lesson, null))
+            .map(lesson -> toLessonResponse(
+                lesson,
+                user != null ? userLessonProgressService.isLessonCompleted(user, lesson.getId()) : null
+            ))
                 .toList();
 
         return ResponseEntity.ok(responses);
     }
 
 
+        @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{lessonId}")
     public ResponseEntity<LessonResponse> updateLesson(
             @PathVariable Long lessonId,
@@ -88,6 +95,7 @@ public class LessonController {
     }
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{lessonId}")
     public ResponseEntity<Void> deleteLesson(@PathVariable Long lessonId) {
         lessonService.deleteLesson(lessonId);
@@ -100,10 +108,15 @@ public class LessonController {
             @PathVariable Long lessonId,
             Authentication authentication
     ) {
-        User user = (User) authentication.getPrincipal();
+        User user = requireUser(authentication);
 
         userLessonProgressService.markLessonCompleted(user, lessonId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private User requireUser(Authentication authentication) {
+        return userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("User not found: " + authentication.getName()));
     }
 }

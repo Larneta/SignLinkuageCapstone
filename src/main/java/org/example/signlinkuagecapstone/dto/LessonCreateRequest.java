@@ -15,6 +15,10 @@ public class LessonCreateRequest {
     @NotNull(message = "moduleId is required")
     private Long moduleId;
 
+    private String videoUrl;
+
+    private Integer lessonOrder;
+
     private Integer durationSeconds;
 
     public String getTitle() { return title; }
@@ -25,6 +29,12 @@ public class LessonCreateRequest {
 
     public Long getModuleId() { return moduleId; }
     public void setModuleId(Long moduleId) { this.moduleId = moduleId; }
+
+    public String getVideoUrl() { return videoUrl; }
+    public void setVideoUrl(String videoUrl) { this.videoUrl = videoUrl; }
+
+    public Integer getLessonOrder() { return lessonOrder; }
+    public void setLessonOrder(Integer lessonOrder) { this.lessonOrder = lessonOrder; }
 
     public Integer getDurationSeconds() { return durationSeconds; }
     public void setDurationSeconds(Integer durationSeconds) { this.durationSeconds = durationSeconds; }

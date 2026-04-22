@@ -1,9 +1,11 @@
 package org.example.signlinkuagecapstone.service;
 
 import org.example.signlinkuagecapstone.dto.*;
+import org.example.signlinkuagecapstone.entity.Module;
 import org.example.signlinkuagecapstone.entity.Quiz;
 import org.example.signlinkuagecapstone.entity.QuizAnswers;
 import org.example.signlinkuagecapstone.entity.QuizQuestions;
+import org.example.signlinkuagecapstone.repository.ModuleRepository;
 import org.example.signlinkuagecapstone.repository.QuizAnswersRepository;
 import org.example.signlinkuagecapstone.repository.QuizQuestionsRepository;
 import org.example.signlinkuagecapstone.repository.QuizRepository;
@@ -17,13 +19,16 @@ import java.util.stream.Collectors;
 public class QuizService {
 
     private final QuizRepository quizRepository;
+    private final ModuleRepository moduleRepository;
     private final QuizQuestionsRepository quizQuestionsRepository;
     private final QuizAnswersRepository quizAnswersRepository;
 
     public QuizService(QuizRepository quizRepository,
+                       ModuleRepository moduleRepository,
                        QuizQuestionsRepository quizQuestionsRepository,
                        QuizAnswersRepository quizAnswersRepository) {
         this.quizRepository = quizRepository;
+        this.moduleRepository = moduleRepository;
         this.quizQuestionsRepository = quizQuestionsRepository;
         this.quizAnswersRepository = quizAnswersRepository;
     }
@@ -31,12 +36,16 @@ public class QuizService {
     @Transactional
     public QuizCreateResponse createQuiz(QuizCreateRequest request) {
 
+        Module module = moduleRepository.findById(request.getModuleId())
+            .orElseThrow(() -> new RuntimeException("Module not found: " + request.getModuleId()));
+
         // 1) Create & save Quiz
         Quiz quiz = new Quiz();
         quiz.setTitle(request.getTitle());
+        quiz.setDescription(request.getDescription());
+        quiz.setModule(module);
+        quiz.setPassingScore(request.getPassingScore() != null ? request.getPassingScore() : 70);
         quiz.setOrderIndex(request.getOrderIndex());
-        // if you have setDescription in Quiz entity, also do:
-        // quiz.setDescription(request.getDescription());
 
         Quiz savedQuiz = quizRepository.save(quiz);
 
@@ -104,7 +113,9 @@ public class QuizService {
                 quiz.getId(),
                 quiz.getTitle(),
                 quiz.getDescription(),
-                quiz.()
+                quiz.getModule() != null ? quiz.getModule().getId() : null,
+                quiz.getPassingScore(),
+                quiz.getQuestions() != null ? quiz.getQuestions().size() : getQuestionsForQuiz(quiz.getId()).size()
         );
     }
 
@@ -117,8 +128,8 @@ public class QuizService {
                 quiz.getId(),
                 quiz.getTitle(),
                 quiz.getDescription(),
-                null, // moduleId - not available from Quiz entity alone
-                null, // passingScore - not available from Quiz entity
+            quiz.getModule() != null ? quiz.getModule().getId() : null,
+            quiz.getPassingScore(),
                 questions.size(),
                 questions
         );

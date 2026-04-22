@@ -46,6 +46,13 @@ public class ModuleService {
         return moduleRepository.findAll();
     }
 
+    public List<ModuleResponse> getAllModuleResponses(User user) {
+        return moduleRepository.findAll()
+                .stream()
+                .map(module -> toModuleResponse(module, user))
+                .toList();
+    }
+
     public Module getModuleById(Long moduleId) {
         return moduleRepository.findById(moduleId)
                 .orElseThrow(() ->
@@ -71,15 +78,21 @@ public class ModuleService {
         return toModuleResponse(module, user);
     }
 
+    public ModuleResponse toModuleResponse(Module module) {
+        return toModuleResponse(module, null);
+    }
 
-    private ModuleResponse toModuleResponse(Module module, User user) {
 
-        UserModuleProgress progress =
-                userModuleProgressRepository
-                        .findByUserIdAndModuleId(user.getId(), module.getId())
-                        .orElse(null);
+    public ModuleResponse toModuleResponse(Module module, User user) {
 
-        List<LessonResponse> lessons = module.getLessons()
+        UserModuleProgress progress = null;
+        if (user != null) {
+            progress = userModuleProgressRepository
+                    .findByUserIdAndModuleId(user.getId(), module.getId())
+                    .orElse(null);
+        }
+
+        List<LessonResponse> lessons = (module.getLessons() != null ? module.getLessons() : List.<Lesson>of())
                 .stream()
                 .map(lesson -> toLessonResponse(lesson, user))
                 .collect(Collectors.toList());
@@ -106,9 +119,12 @@ public class ModuleService {
     }
 
     private LessonResponse toLessonResponse(Lesson lesson, User user) {
-        UserLessonProgress lessonProgress = userLessonProgressRepository
-                .findByUserIdAndLessonId(user.getId(), lesson.getId())
-                .orElse(null);
+        UserLessonProgress lessonProgress = null;
+        if (user != null) {
+            lessonProgress = userLessonProgressRepository
+                    .findByUserIdAndLessonId(user.getId(), lesson.getId())
+                    .orElse(null);
+        }
 
         Boolean completed = lessonProgress != null ? lessonProgress.getCompleted() : false;
 

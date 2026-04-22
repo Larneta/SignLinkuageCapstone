@@ -44,21 +44,8 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ Public endpoints
-                        .requestMatchers("/auth/login", "/auth/register", "/auth/me").permitAll()
-
-                        // ✅ Admin endpoints - require ADMIN role
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                        // ✅ Module and lesson endpoints - require USER role
-                        .requestMatchers("/modules/**").hasRole("USER")
-                        .requestMatchers("/lessons/**").hasRole("USER")
-                        .requestMatchers("/dashboard/**").hasRole("USER")
-
-                        // ✅ Quiz endpoints - require USER role
-                        .requestMatchers("/quiz/**").hasRole("USER")
-
-                        // ✅ All other requests must be authenticated
+                    .requestMatchers("/api/auth/login", "/error").permitAll()
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 

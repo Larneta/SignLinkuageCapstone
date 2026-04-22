@@ -1,8 +1,11 @@
 package org.example.signlinkuagecapstone.dto;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.List;
@@ -14,6 +17,13 @@ public class QuizCreateRequest {
 
     @Size(max = 1000, message = "description must be 1000 characters or less")
     private String description;
+
+    @NotNull(message = "moduleId is required")
+    private Long moduleId;
+
+    @Min(value = 0, message = "passingScore must be at least 0")
+    @Max(value = 100, message = "passingScore must be at most 100")
+    private Integer passingScore;
 
     private int orderIndex;
 
@@ -61,6 +71,10 @@ public class QuizCreateRequest {
     public void setTitle(String title) { this.title = title; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public Long getModuleId() { return moduleId; }
+    public void setModuleId(Long moduleId) { this.moduleId = moduleId; }
+    public Integer getPassingScore() { return passingScore; }
+    public void setPassingScore(Integer passingScore) { this.passingScore = passingScore; }
     public int getOrderIndex() { return orderIndex; }
     public void setOrderIndex(int orderIndex) { this.orderIndex = orderIndex; }
     public List<QuestionRequest> getQuestions() { return questions; }
