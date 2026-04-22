@@ -6,8 +6,12 @@
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "adminFirstName", "value": "System" },
+    { "key": "adminLastName", "value": "Admin" },
     { "key": "adminUsername", "value": "admin@example.com" },
     { "key": "adminPassword", "value": "AdminPassword123!" },
+    { "key": "userFirstName", "value": "Regular" },
+    { "key": "userLastName", "value": "User" },
     { "key": "userUsername", "value": "user@example.com" },
     { "key": "userPassword", "value": "UserPassword123!" },
     { "key": "adminToken", "value": "" },
@@ -18,6 +22,30 @@
     { "key": "questionId", "value": "1" }
   ],
   "item": [
+    {
+      "name": "Auth - Register Admin",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"{{adminFirstName}}\",\n  \"lastName\": \"{{adminLastName}}\",\n  \"email\": \"{{adminUsername}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"role\": \"ADMIN\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Auth - Register User",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"{{userFirstName}}\",\n  \"lastName\": \"{{userLastName}}\",\n  \"email\": \"{{userUsername}}\",\n  \"password\": \"{{userPassword}}\",\n  \"role\": \"USER\"\n}"
+        }
+      }
+    },
     {
       "name": "Auth - Login Admin",
       "request": {
