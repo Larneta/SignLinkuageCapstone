@@ -2,7 +2,13 @@ package org.example.signlinkuagecapstone.dto;
 
 public class LoginResponse {
     private String token;
+    private String username; // display name (first + last)
 
-    public LoginResponse(String token) { this.token = token; }
+    public LoginResponse(String token, String username) {
+        this.token = token;
+        this.username = username;
+    }
+
     public String getToken() { return token; }
+    public String getUsername() { return username; }
 }

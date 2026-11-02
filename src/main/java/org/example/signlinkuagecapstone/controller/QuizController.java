@@ -2,6 +2,7 @@ package org.example.signlinkuagecapstone.controller;
 
 import jakarta.validation.Valid;
 import org.example.signlinkuagecapstone.dto.*;
+import org.example.signlinkuagecapstone.entity.Quiz;
 import org.example.signlinkuagecapstone.service.QuizService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,12 @@ public class QuizController {
     public ResponseEntity<QuizCreateResponse> createQuiz(@Valid @RequestBody QuizCreateRequest request) {
         QuizCreateResponse created = quizService.createQuiz(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+    // QuizController.java
+    @GetMapping("/module/{moduleId}")
+    public ResponseEntity<List<QuizResponse>> getQuizzesByModule(@PathVariable Long moduleId) {
+        List<QuizResponse> quizzes = quizService.getQuizByModule(moduleId);
+        return ResponseEntity.ok(quizzes);
     }
 
     @GetMapping("/{quizId}")

@@ -32,7 +32,7 @@ public class LessonService {
         Lesson lesson = new Lesson();
         lesson.setTitle(request.getTitle());
         lesson.setDescription(request.getDescription());
-        lesson.setVideoUrl(request.getVideoUrl());
+        lesson.setVideoUrl("https://www.youtube.com/watch?v=DBQINq0SsAw");
         lesson.setLessonOrder(request.getLessonOrder());
         lesson.setDurationSeconds(request.getDurationSeconds());
         lesson.setModule(module);

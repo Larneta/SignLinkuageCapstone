@@ -45,7 +45,11 @@ public class AuthController {
 
         String normalizedEmail = request.getEmail().trim().toLowerCase();
         if (userRepository.findByEmail(normalizedEmail).isPresent()) {
-            throw new RuntimeException("Email is already registered: " + normalizedEmail);
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT) // ✅ 409
+                    .body(Map.of(
+                            "message", "Email is already registered"
+                    ));
         }
 
         User user = new User();
@@ -55,27 +59,34 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(normalizeRole(request.getRole()));
 
-        User saved = userRepository.save(user);
+        try {
+            User saved = userRepository.save(user);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
-                "id", saved.getId(),
-                "email", saved.getEmail(),
-                "role", saved.getRole()
-        ));
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "id", saved.getId(),
+                    "email", saved.getEmail(),
+                    "role", saved.getRole()
+            ));
+        } catch (Exception e) {
+            // Return clear error to frontend instead of generic 500 with no body
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "message", "Failed to register user",
+                    "error", e.getMessage()
+            ));
+        }
     }
 
     // ✅ JWT LOGIN: username/password -> token
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getUsername(),
+                        request.getEmail(),
                         request.getPassword()
                 )
         );
 
-        // Extract username and role from Authentication
+        // Extract username (email) and role from Authentication
         String username = authentication.getName();
         String role = authentication.getAuthorities()
                 .stream()
@@ -84,15 +95,33 @@ public class AuthController {
                 .orElse("USER")
                 .replaceAll("^ROLE_", ""); // Remove ROLE_ prefix if present
 
+        // Load user entity to get display name (first + last)
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("User not found after authentication: " + username));
+
+        String displayName = (user.getFirstName() != null ? user.getFirstName() : "")
+                + (user.getLastName() != null ? " " + user.getLastName() : "");
+
         String token = jwtTokenProvider.generateToken(username, role);
-        return new LoginResponse(token);
+        return new LoginResponse(token, displayName.trim());
     }
 
     // ✅ Optional: keep /me (works after JWT filter sets Authentication)
     @GetMapping("/me")
     public Map<String, Object> me(Authentication authentication) {
+        String email = authentication.getName();
+        String displayName = email;
+        try {
+            User user = userRepository.findByEmail(email).orElse(null);
+            if (user != null) {
+                displayName = ((user.getFirstName() != null ? user.getFirstName() : "") +
+                        (user.getLastName() != null ? " " + user.getLastName() : "")).trim();
+            }
+        } catch (Exception ignored) {}
+
         return Map.of(
-                "username", authentication.getName(),
+                "username", displayName,
+                "email", authentication.getName(),
                 "roles", authentication.getAuthorities()
                         .stream()
                         .map(GrantedAuthority::getAuthority)

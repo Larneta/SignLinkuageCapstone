@@ -1,5 +1,7 @@
 package org.example.signlinkuagecapstone.dto;
 
+import org.example.signlinkuagecapstone.entity.QuizQuestions;
+
 import java.util.List;
 
 public class QuizQuestionResponse {
@@ -11,6 +13,12 @@ public class QuizQuestionResponse {
         this.questionId = questionId;
         this.prompt = prompt;
         this.options = options;
+    }
+
+    public static QuizQuestionResponse toQuizQuestionResponse(QuizQuestions quizQuestion) {
+        return new QuizQuestionResponse(quizQuestion.getId(),
+                quizQuestion.getQuestionText(),
+                quizQuestion.getOptions().stream().map(QuizOptionResponse::toQuizOptionResponse).toList());
     }
 
     public Long getQuestionId() { return questionId; }

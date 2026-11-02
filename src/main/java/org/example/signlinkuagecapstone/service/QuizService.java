@@ -33,6 +33,11 @@ public class QuizService {
         this.quizAnswersRepository = quizAnswersRepository;
     }
 
+    public List<QuizResponse> getQuizByModule(Long moduleId) {
+       var quiz = quizRepository.findByModuleId(moduleId);
+       return quiz.stream().map(QuizResponse::toQuizResponse).toList();
+    }
+
     @Transactional
     public QuizCreateResponse createQuiz(QuizCreateRequest request) {
 
